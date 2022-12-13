@@ -88,23 +88,23 @@ class PolarMask(nn.Module):
 
         loc3 = self.loc_layer3(p3)
         conf_centerness3 = self.conf_centerness_layer3(p3)
-        conf3, centerness3 = conf_centerness3.split([self.num_classes, 1], dim=1)
+        conf3, centerness3 = conf_centerness3.split([self.num_classes-1, 1], dim=1)
 
         loc4 = self.loc_layer4(p4)
         conf_centerness4 = self.conf_centerness_layer4(p4)
-        conf4, centerness4 = conf_centerness4.split([self.num_classes, 1], dim=1)
+        conf4, centerness4 = conf_centerness4.split([self.num_classes-1, 1], dim=1)
 
         loc5 = self.loc_layer5(p5)
         conf_centerness5 = self.conf_centerness_layer5(p5)
-        conf5, centerness5 = conf_centerness5.split([self.num_classes, 1], dim=1)
+        conf5, centerness5 = conf_centerness5.split([self.num_classes-1, 1], dim=1)
 
         loc6 = self.loc_layer6(p6)
         conf_centerness6 = self.conf_centerness_layer6(p6)
-        conf6, centerness6 = conf_centerness6.split([self.num_classes, 1], dim=1)
+        conf6, centerness6 = conf_centerness6.split([self.num_classes-1, 1], dim=1)
 
         loc7 = self.loc_layer7(p7)
         conf_centerness7 = self.conf_centerness_layer7(p7)
-        conf7, centerness7 = conf_centerness7.split([self.num_classes, 1], dim=1)
+        conf7, centerness7 = conf_centerness7.split([self.num_classes-1, 1], dim=1)
 
         locs = torch.cat([loc3.permute(0, 2, 3, 1).contiguous().view(loc3.size(0), -1),
                     loc4.permute(0, 2, 3, 1).contiguous().view(loc4.size(0), -1),
@@ -126,6 +126,25 @@ class PolarMask(nn.Module):
 
         out = (locs, confs, centernesses)
         return out
+
+from torchsummary import summary
+
+def modeltorchviz(model,input,input2):
+    from torchviz import make_dot
+    # params: model = MSDNet(args).cuda()
+    # params: input = (3, 32, 32) 
+    # params: input2 = torch.randn(1, 1, 28, 28).requires_grad_(True)  # 定义一个网络的输入值
+    print(model)        
+    summary(model, input)
+    # y = model(input2.cuda())    # 获取网络的预测值
+    y = model(input2)
+    MyConvNetVis = make_dot(y, params=dict(list(model.named_parameters()) + [('x', input2)]))
+    MyConvNetVis.format = "png"
+    # 指定文件生成的文件夹
+    MyConvNetVis.directory = "data"
+    # 生成文件
+    MyConvNetVis.view()
+
 
 if __name__ == '__main__':
     model = PolarMask()
